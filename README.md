@@ -13,7 +13,13 @@
 
 预览使用示例任务。
 
-## 启动
+## 下载
+
+从 [Releases](https://github.com/KamiOrz/todolist/releases/latest) 下载 macOS 通用版 ZIP（Apple Silicon / Intel）。解压后将 TodoList.app 拖入“应用程序”，双击启动，然后点击顶部菜单栏的清单图标。需要 macOS 14 或更高版本。
+
+当前安装包为临时签名，尚未经过 Apple 公证，首次打开可能被 macOS 拦截。
+
+## 从源码启动
 
 需要 macOS 14 或更高版本。开发构建需要 Xcode 16 / Swift 6。
 
@@ -43,7 +49,7 @@ cd todolist
 
 面板底部提供“开机启动”开关，开启后在登录 Mac 时自动打开，关闭后取消。状态以 macOS 登录项为准；若提示等待系统允许，点击“前往系统设置允许”。应用不会默认开启此选项。启用后请保留应用所在位置；如需移动应用，先关闭开关，移动后重新打开应用再开启。
 
-无网络服务、账户、同步或提醒。应用采用本机临时签名，未进行 Developer ID 公证；当前产物用于本机运行。
+无网络服务、账户、同步或提醒。应用采用本机临时签名，未进行 Developer ID 公证；发布包尚未经过 Apple 公证。
 
 ## 开发与验证
 
@@ -65,3 +71,11 @@ swift test
 ## 许可证
 
 本项目采用 [MIT License](LICENSE)。Logo 使用 AI 辅助生成。
+
+## 打包发布
+
+```sh
+./script/build_and_run.sh --package
+```
+
+生成 Release 优化的 arm64 / x86_64 通用应用、ZIP 和 SHA256SUMS.txt，位于 dist 目录。打包不会退出当前运行的应用。

@@ -6,13 +6,19 @@ BUNDLE_ID="local.todolist.mac"
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 case "$MODE" in
-  run|--debug|--logs|--telemetry|--verify) ;;
-  *) echo "usage: $0 [--debug|--logs|--telemetry|--verify]" >&2; exit 2 ;;
+  run|--debug|--logs|--telemetry|--verify|--package) ;;
+  *) echo "usage: $0 [--debug|--logs|--telemetry|--verify|--package]" >&2; exit 2 ;;
 esac
+if [ "$MODE" = "--package" ]; then
+  swift build -c release --arch arm64 --arch x86_64
+  BUILD_BINARY="$(swift build -c release --arch arm64 --arch x86_64 --show-bin-path)/$APP_NAME"
+  APP_BUNDLE="$ROOT_DIR/dist/release/$APP_NAME.app"
+else
 pkill -x "$APP_NAME" >/dev/null 2>&1 || true
 swift build
 BUILD_BINARY="$(swift build --show-bin-path)/$APP_NAME"
 APP_BUNDLE="$ROOT_DIR/dist/$APP_NAME.app"
+fi
 mkdir -p "$APP_BUNDLE/Contents/MacOS"
 cp "$BUILD_BINARY" "$APP_BUNDLE/Contents/MacOS/$APP_NAME"
 RESOURCES="$APP_BUNDLE/Contents/Resources"
@@ -43,6 +49,14 @@ cat > "$APP_BUNDLE/Contents/Info.plist" <<PLIST
 </dict></plist>
 PLIST
 codesign --force --sign - "$APP_BUNDLE"
+if [ "$MODE" = "--package" ]; then
+  codesign --verify --strict "$APP_BUNDLE"
+  ARCHIVE="$ROOT_DIR/dist/TodoList-v1.0.0-macOS-universal.zip"
+  ditto -c -k --sequesterRsrc --keepParent "$APP_BUNDLE" "$ARCHIVE"
+  (cd "$ROOT_DIR/dist" && shasum -a 256 "$(basename "$ARCHIVE")" > SHA256SUMS.txt)
+  echo "$ARCHIVE"
+  exit
+fi
 if [ "$MODE" = "--debug" ]; then
   lldb -- "$APP_BUNDLE/Contents/MacOS/$APP_NAME"
   exit
